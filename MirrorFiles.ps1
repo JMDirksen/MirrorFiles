@@ -6,7 +6,10 @@ Param (
 
 # Check input
 if (-not (Test-Path $Source -PathType Container) -or -not (Test-Path $Target -PathType Container)) {
-    Write-Error -Message "Source and Target need to be existing folders"
+    Write-Error -Message "Source and Target need to be existing folders" -ErrorAction Stop
+}
+if ($Source -like "$Target*" -or $Target -like "$Source*") {
+    Write-Error -Message "Source and Target can't be nested paths" -ErrorAction Stop
 }
 
 # Copy/Create new/modified files/folders
