@@ -1,10 +1,18 @@
-$sourcePath = "C:\Test\A"
-$targetPath = "C:\Test\B"
+[CmdletBinding()]
+Param (
+    [Parameter(Mandatory = $true)] [string] $Source,
+    [Parameter(Mandatory = $true)] [string] $Target
+)
+
+# Check input
+if (-not (Test-Path $Source -PathType Container) -or -not (Test-Path $Target -PathType Container)) {
+    Write-Error -Message "Source and Target need to be existing folders"
+}
 
 # Copy/Create new/modified files/folders
-Get-ChildItem -Path $sourcePath -Recurse | ForEach-Object {
+Get-ChildItem -Path $Source -Recurse | ForEach-Object {
     $sourceFileName = $_.FullName
-    $targetFileName = $_.FullName.Replace($sourcePath, $targetPath)
+    $targetFileName = $_.FullName.Replace($Source, $Target)
     if ($_.PSIsContainer) {
         if (-not (Test-Path $targetFileName)) {
             "New folder {0}" -f $targetFileName
@@ -27,8 +35,8 @@ Get-ChildItem -Path $sourcePath -Recurse | ForEach-Object {
 }
 
 # Remove extra files/folders
-Get-ChildItem -Path $targetPath -Recurse | ForEach-Object {
-    if (-not (Test-Path $_.FullName.Replace($targetPath, $sourcePath))) {
+Get-ChildItem -Path $Target -Recurse | ForEach-Object {
+    if (-not (Test-Path $_.FullName.Replace($Target, $Source))) {
         $type = if ($_.PSIsContainer) { "folder" } else { "file" }
         "Extra {0} {1}" -f $type, $_.FullName
         Remove-Item -Path $_.FullName -Recurse
